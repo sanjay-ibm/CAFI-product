@@ -142,12 +142,48 @@ echo "📦 Preparing build context..."
 BUILD_DIR=$(mktemp -d)
 trap "rm -rf ${BUILD_DIR}" EXIT
 
-mkdir -p ${BUILD_DIR}/{src,config,data}
-cp -r src/* ${BUILD_DIR}/src/ 2>/dev/null || true
-cp config/requirements.txt ${BUILD_DIR}/config/ 2>/dev/null || true
-cp data/product_match_dictionary.json ${BUILD_DIR}/data/ 2>/dev/null || true
-cp /tmp/Dockerfile ${BUILD_DIR}/
+# Create directory structure
+mkdir -p ${BUILD_DIR}/src
+mkdir -p ${BUILD_DIR}/config
+mkdir -p ${BUILD_DIR}/data
 
+# Copy files with error checking
+echo "  Copying source files..."
+if [ -d "src" ]; then
+    cp -r src/* ${BUILD_DIR}/src/
+    echo "  ✓ Source files copied"
+else
+    echo "  ✗ src directory not found"
+    exit 1
+fi
+
+if [ -f "config/requirements.txt" ]; then
+    cp config/requirements.txt ${BUILD_DIR}/config/
+    echo "  ✓ requirements.txt copied"
+else
+    echo "  ✗ config/requirements.txt not found"
+    exit 1
+fi
+
+if [ -f "data/product_match_dictionary.json" ]; then
+    cp data/product_match_dictionary.json ${BUILD_DIR}/data/
+    echo "  ✓ product_match_dictionary.json copied"
+else
+    echo "  ✗ data/product_match_dictionary.json not found"
+    exit 1
+fi
+
+cp /tmp/Dockerfile ${BUILD_DIR}/
+echo "  ✓ Dockerfile copied"
+
+# List build context contents for verification
+echo ""
+echo "Build context contents:"
+ls -la ${BUILD_DIR}/
+echo ""
+echo "Config directory:"
+ls -la ${BUILD_DIR}/config/ 2>/dev/null || echo "  (empty or missing)"
+echo ""
 echo "Build context size: $(du -sh ${BUILD_DIR} | cut -f1)"
 echo ""
 
