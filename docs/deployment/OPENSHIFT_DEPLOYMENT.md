@@ -2,10 +2,16 @@
 
 ## Quick Deploy
 
-Run this single command on **mcpX1** (where you have `oc` CLI access):
+**IMPORTANT:** The script must be run from the **project root directory**.
+
+On **mcpX1** (where you have `oc` CLI access):
 
 ```bash
-chmod +x openshift-deploy.sh && ./openshift-deploy.sh
+# Navigate to project root
+cd /path/to/CAFI-product
+
+# Run deployment script
+chmod +x docs/deployment/openshift-deploy.sh && bash docs/deployment/openshift-deploy.sh
 ```
 
 That's it! The script will:
@@ -32,6 +38,10 @@ That's it! The script will:
    ```bash
    oc login https://api.cfai.cp.fyre.ibm.com:6443
    ```
+3. **You must run the script from the project root directory** where these exist:
+   - `src/` directory
+   - `config/requirements.txt`
+   - `data/product_match_dictionary.json`
 
 ## After Deployment
 

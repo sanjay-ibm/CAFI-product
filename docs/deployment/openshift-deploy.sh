@@ -2,12 +2,30 @@
 ################################################################################
 # OpenShift Deployment Script - Product Catalog API
 # Run this script on mcpX1 where you have oc CLI access
+# IMPORTANT: Must be run from the project root directory
 ################################################################################
 
 set -e
 
 PROJECT="cfai-project"
 APP="product-catalog-api"
+
+# Check if running from project root
+if [ ! -d "src" ] || [ ! -f "config/requirements.txt" ] || [ ! -f "data/product_match_dictionary.json" ]; then
+    echo "❌ Error: This script must be run from the project root directory"
+    echo ""
+    echo "Required structure:"
+    echo "  ./src/"
+    echo "  ./config/requirements.txt"
+    echo "  ./data/product_match_dictionary.json"
+    echo ""
+    echo "Current directory: $(pwd)"
+    echo ""
+    echo "Please cd to the project root and run again:"
+    echo "  cd /path/to/CAFI-product"
+    echo "  bash docs/deployment/openshift-deploy.sh"
+    exit 1
+fi
 
 echo "╔════════════════════════════════════════════════════════════╗"
 echo "║  Product Catalog API - OpenShift Deployment               ║"
