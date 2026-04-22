@@ -1,4 +1,7 @@
 # Environment variables (contains sensitive credentials)
+# Data files (contains sensitive product information)
+data/
+
 .env
 
 # Python

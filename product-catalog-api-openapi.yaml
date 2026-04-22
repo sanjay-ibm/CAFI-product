@@ -4,8 +4,8 @@ info:
   description: API for searching and retrieving IBM product information
   version: 1.0.0
 servers:
-  - url: https://product-catalog-api-cfai.apps.ocp-ai-dev.cp.fyre.ibm.com
-    description: Production server
+  - url: https://6459-2620-1f7-3d47-7c46-00-32-24c.ngrok-free.app
+    description: Public API endpoint via Ngrok
 
 paths:
   /products:
