@@ -8,31 +8,6 @@ servers:
     description: Public API endpoint via Ngrok
 
 paths:
-  /products:
-    get:
-      operationId: get_products
-      summary: Get all products
-      description: List all available IBM products in the catalog
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  products:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        product_code:
-                          type: string
-                        product_name:
-                          type: string
-                  count:
-                    type: integer
-
   /products/search:
     get:
       operationId: search_products
