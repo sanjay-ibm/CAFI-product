@@ -22,7 +22,7 @@ metadata:
 type: Opaque
 stringData:
   # Replace with your actual ngrok authtoken from https://dashboard.ngrok.com
-  NGROK_AUTHTOKEN: "YOUR_NGROK_AUTHTOKEN_HERE"
+  NGROK_AUTHTOKEN: "xxxxxxxxxxxxxxxxx"
 
 ---
 apiVersion: apps/v1
