@@ -30,9 +30,14 @@ echo "📦 Creating/switching to namespace: cafi-product"
 oc create namespace cafi-product --dry-run=client -o yaml | oc apply -f -
 oc project cafi-product
 
+# Get script directory and project root
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$( cd "$SCRIPT_DIR/../.." && pwd )"
+
 # Create ConfigMap with application code
 echo ""
 echo "📝 Creating ConfigMap with application code..."
+cd "$PROJECT_ROOT"
 oc create configmap cafi-product-code \
   --from-file=app.py \
   --from-file=config/requirements.txt \
@@ -42,7 +47,7 @@ oc create configmap cafi-product-code \
 # Apply the deployment
 echo ""
 echo "🔧 Applying OpenShift deployment configuration..."
-oc apply -f openshift-deployment.yaml
+oc apply -f "$SCRIPT_DIR/openshift-deployment.yaml"
 
 # Wait for deployments to be ready
 echo ""
