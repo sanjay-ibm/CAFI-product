@@ -18,13 +18,11 @@ COPY src/ ./src/
 COPY data/ ./data/
 COPY app.py .
 
-# Create non-root user for security
-RUN useradd -u 1001 -r -g 0 -m -d /app -s /sbin/nologin \
-    -c "Application user" appuser && \
-    chown -R 1001:0 /app && \
+# Set permissions for OpenShift (UBI already has user 1001)
+RUN chown -R 1001:0 /app && \
     chmod -R g=u /app
 
-# Switch to non-root user
+# Switch to non-root user (already exists in UBI)
 USER 1001
 
 # Expose port
