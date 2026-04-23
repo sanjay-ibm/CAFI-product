@@ -125,9 +125,9 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 5
       
-      # Ngrok Sidecar Container
+      # Ngrok Sidecar Container - Using Alpine-based custom image to avoid Docker Hub rate limits
       - name: ngrok
-        image: docker.io/ngrok/ngrok:latest
+        image: quay.io/curl/curl:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 4040
@@ -142,7 +142,14 @@ spec:
         - /bin/sh
         - -c
         - |
+          echo "Installing ngrok..."
+          curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | tee /etc/apk/keys/ngrok.asc >/dev/null
+          echo "@ngrok https://ngrok-agent.s3.amazonaws.com" >> /etc/apk/repositories
+          apk update
+          apk add ngrok@ngrok
+          
           echo "Starting ngrok tunnel..."
+          ngrok config add-authtoken \${NGROK_AUTHTOKEN}
           ngrok http http://localhost:8000 --log=stdout --log-level=info
         resources:
           requests:
@@ -155,13 +162,13 @@ spec:
           httpGet:
             path: /api/tunnels
             port: 4040
-          initialDelaySeconds: 15
+          initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /api/tunnels
             port: 4040
-          initialDelaySeconds: 5
+          initialDelaySeconds: 15
           periodSeconds: 5
 EOF
 echo -e "${GREEN}✓ Deployment created${NC}"
