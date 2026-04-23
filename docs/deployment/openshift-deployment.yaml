@@ -1,0 +1,131 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cafi-product
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cafi-product-api
+  namespace: cafi-product
+  labels:
+    app: cafi-product
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cafi-product
+  template:
+    metadata:
+      labels:
+        app: cafi-product
+    spec:
+      containers:
+      - name: api
+        image: python:3.9-slim
+        workingDir: /app
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            pip install --no-cache-dir -r config/requirements.txt && \
+            python app.py
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: PORT
+          value: "8000"
+        - name: HOST
+          value: "0.0.0.0"
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: app-code
+        configMap:
+          name: cafi-product-code
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cafi-product-service
+  namespace: cafi-product
+  labels:
+    app: cafi-product
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: cafi-product
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ngrok-tunnel
+  namespace: cafi-product
+  labels:
+    app: ngrok
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ngrok
+  template:
+    metadata:
+      labels:
+        app: ngrok
+    spec:
+      containers:
+      - name: ngrok
+        image: ngrok/ngrok:latest
+        args:
+          - "http"
+          - "cafi-product-service:8000"
+          - "--log=stdout"
+        env:
+        - name: NGROK_AUTHTOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ngrok-secret
+              key: authtoken
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ngrok-secret
+  namespace: cafi-product
+type: Opaque
+stringData:
+  authtoken: "2wocRy0hrfn2r3cLIiABBDcyd8W_7M9xwJpsUA96rD2u8R9pe"
+
+# Made with Bob
