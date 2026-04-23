@@ -97,18 +97,19 @@ def search_products(
     
     # Return format based on parameter
     if format == "legacy":
-        # Legacy format: support_desc, support_alias
+        # Legacy format: support_desc, support_alias (with optional confidence)
         legacy_results = []
         for result in results:
             legacy_results.append({
                 "score": result["score"],
+                "confidence": result.get("confidence", result["score"]),
                 "product_code": result["product_code"],
                 "support_desc": result["product_name"],
                 "support_alias": result["matched_aliases"]
             })
         return {"results": legacy_results}
     else:
-        # New format: enhanced with execution time, match types, etc.
+        # New format: enhanced with execution time, match types, confidence, etc.
         return {
             "query": query,
             "normalized_query": normalized_query,

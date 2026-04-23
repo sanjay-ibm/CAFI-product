@@ -8,7 +8,8 @@ from typing import List, Optional
 
 class ProductResult(BaseModel):
     """Single product match result."""
-    score: float = Field(..., description="Match confidence score (0.0-1.0)")
+    score: float = Field(..., description="Raw match score from matcher (0.0-1.0)")
+    confidence: float = Field(..., description="Confidence score with contextual adjustments (0.00-1.00)")
     product_code: str = Field(..., description="Unique product code (SLC_CODE)")
     product_name: Optional[str] = Field(None, description="Product name")
     matched_aliases: List[str] = Field(..., description="Aliases that matched the query")
@@ -27,6 +28,7 @@ class SearchResponse(BaseModel):
 class LegacyProductResult(BaseModel):
     """Legacy API format for backward compatibility."""
     score: float
+    confidence: Optional[float] = None
     product_code: str
     support_desc: Optional[str]
     support_alias: List[str]

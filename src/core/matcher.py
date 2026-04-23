@@ -2,6 +2,7 @@ from rapidfuzz import fuzz, process
 from collections import defaultdict
 from typing import Dict, List, Any, Optional, Tuple, Set, TypedDict
 import re
+from .confidence_scorer import ConfidenceScorer
 
 # Optional enhanced imports - graceful fallback if not available
 try:
@@ -43,7 +44,8 @@ class ProductMatcher:
         self,
         match_dictionary: Dict[str, Any],
         delimiter_dict: Optional[Dict[str, str]] = None,
-        use_enhanced: bool = True
+        use_enhanced: bool = True,
+        enable_confidence_scoring: bool = True
     ):
         """
         Initialize the matcher with dictionaries.
@@ -52,10 +54,15 @@ class ProductMatcher:
             match_dictionary: Dict with 'exact_match' and 'fuzzy_match' sections
             delimiter_dict: Optional dict for term normalization (e.g., {'tcp ip': '_'})
             use_enhanced: Enable enhanced features (Aho-Corasick, BM25, N-gram) if available
+            enable_confidence_scoring: Enable confidence scoring for matches
         """
         self.delimiter_dict = delimiter_dict or {}
         self.match_dictionary = match_dictionary or {"exact_match": {}, "fuzzy_match": {}}
         self.use_enhanced = use_enhanced and ENHANCED_AVAILABLE
+        self.enable_confidence_scoring = enable_confidence_scoring
+        
+        # Initialize confidence scorer
+        self.confidence_scorer = ConfidenceScorer() if enable_confidence_scoring else None
         
         # Exact matching structures
         self.exact_index: Dict[str, List[Dict[str, str]]] = {}
@@ -506,7 +513,8 @@ class ProductMatcher:
         2. Get all matches (exact + fuzzy)
         3. Group by product code (SLC_CODE)
         4. Aggregate scores (max), aliases (list), match types (set)
-        5. Rank and return top N results
+        5. Calculate confidence scores if enabled
+        6. Rank and return top N results
         
         Args:
             query: User search query
@@ -516,7 +524,7 @@ class ProductMatcher:
             char_limit: Maximum query length to process
             
         Returns:
-            List of product dicts with scores, codes, names, aliases
+            List of product dicts with scores, codes, names, aliases, confidence
         """
         # Truncate long queries
         query = str(query)[:char_limit]
@@ -535,7 +543,9 @@ class ProductMatcher:
                 "product_code": None,
                 "product_name": None,
                 "matched_aliases": [],
-                "match_types": set()
+                "match_types": set(),
+                "best_match_alias": None,
+                "best_match_type": None
             }
         
         grouped: Dict[str, Dict[str, Any]] = defaultdict(_default_group)
@@ -552,8 +562,11 @@ class ProductMatcher:
                 item["product_code"] = code
                 item["product_name"] = name
                 
-                # Take maximum score across all aliases
-                item["score"] = max(item["score"], round(score, 6))
+                # Track best match for confidence calculation
+                if score > item["score"]:
+                    item["score"] = round(score, 6)
+                    item["best_match_alias"] = alias
+                    item["best_match_type"] = match_type
                 
                 # Collect unique aliases
                 if alias not in item["matched_aliases"]:
@@ -562,17 +575,47 @@ class ProductMatcher:
                 # Collect match types
                 item["match_types"].add(match_type)
         
-        # Convert to list and format match_types
+        # Convert to list and calculate confidence scores
         results = []
+        total_candidates = len(grouped)
+        
         for _, item in grouped.items():
             item["match_types"] = sorted(list(item["match_types"]))
+            
+            # Calculate confidence score if enabled
+            if self.enable_confidence_scoring and self.confidence_scorer:
+                # Determine if fallback was used (fuzzy with low score)
+                used_fallback = (
+                    "fuzzy" in item["best_match_type"] and
+                    item["score"] < 0.75
+                )
+                
+                confidence = self.confidence_scorer.calculate_confidence(
+                    match_type=item["best_match_type"],
+                    match_score=item["score"],
+                    query=query,
+                    matched_alias=item["best_match_alias"],
+                    product_count=len(item["matched_aliases"]),
+                    candidate_count=total_candidates,
+                    product_code=item["product_code"],
+                    used_fallback=used_fallback
+                )
+                item["confidence"] = confidence
+            else:
+                # Fallback: use match score as confidence
+                item["confidence"] = round(item["score"], 2)
+            
+            # Clean up temporary fields
+            del item["best_match_alias"]
+            del item["best_match_type"]
+            
             results.append(item)
         
-        # Final ranking: exact-backed > score > alias count
+        # Final ranking: exact-backed > confidence > score > alias count
         def result_rank(item):
             has_exact = any(mt.startswith("exact") for mt in item["match_types"])
             exact_priority = 1 if has_exact else 0
-            return (exact_priority, item["score"], len(item["matched_aliases"]))
+            return (exact_priority, item["confidence"], item["score"], len(item["matched_aliases"]))
         
         results.sort(key=result_rank, reverse=True)
         return results[:return_count]
