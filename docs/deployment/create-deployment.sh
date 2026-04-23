@@ -51,9 +51,17 @@ if ! oc get configmap product-catalog-config &> /dev/null; then
 fi
 echo -e "${GREEN}✓ ConfigMap ready${NC}"
 
-# Get image reference
-IMAGE=$(oc get is/${APP_NAME} -o jsonpath='{.status.dockerImageRepository}'):latest
-echo -e "${BLUE}Using image: ${IMAGE}${NC}"
+# Get image reference - check if ImageStream exists first
+if oc get is/${APP_NAME} &> /dev/null; then
+    IMAGE=$(oc get is/${APP_NAME} -o jsonpath='{.status.dockerImageRepository}'):latest
+    echo -e "${BLUE}Using image: ${IMAGE}${NC}"
+else
+    echo -e "${RED}Error: ImageStream '${APP_NAME}' not found${NC}"
+    echo -e "${BLUE}You need to build the image first. Run:${NC}"
+    echo -e "${BLUE}  oc new-build --name=${APP_NAME} --binary --strategy=docker${NC}"
+    echo -e "${BLUE}  oc start-build ${APP_NAME} --from-dir=. --follow${NC}"
+    exit 1
+fi
 
 # Create deployment
 echo -e "${BLUE}Creating deployment...${NC}"
