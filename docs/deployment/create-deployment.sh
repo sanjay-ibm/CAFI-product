@@ -127,7 +127,8 @@ spec:
       
       # Ngrok Sidecar Container
       - name: ngrok
-        image: ngrok/ngrok:latest
+        image: docker.io/ngrok/ngrok:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 4040
           name: ngrok-web
