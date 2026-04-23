@@ -100,11 +100,13 @@ spec:
     spec:
       containers:
       - name: ngrok
-        image: ngrok/ngrok:latest
+        image: docker.io/ngrok/ngrok:latest
+        imagePullPolicy: Always
+        command: ["/bin/sh", "-c"]
         args:
-          - "http"
-          - "cafi-product-service:8000"
-          - "--log=stdout"
+          - |
+            ngrok config add-authtoken $NGROK_AUTHTOKEN && \
+            ngrok http cafi-product-service:8000 --log=stdout
         env:
         - name: NGROK_AUTHTOKEN
           valueFrom:
@@ -118,6 +120,12 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "200m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop:
+              - ALL
 ---
 apiVersion: v1
 kind: Secret
