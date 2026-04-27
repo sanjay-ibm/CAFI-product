@@ -35,19 +35,20 @@ instructions: |
   - Example queries: "5737-H33", "IBM Cloud Pak", "cloud storage solution"
   
   **Get Product (GET /products/{SLC_CODE}):**
-  - Use when user provides a specific product code
-  - Use to retrieve exact product details
-  - Use to verify a product code from search results
-  - Parameter: SLC_CODE (exact product code)
+  - Use ONLY when you have a confirmed valid product code from a previous search result
+  - Use to retrieve exact product details after search
+  - Parameter: SLC_CODE (exact product code from search results)
   - Returns product_name and product_code
   - Returns 404 if product code doesn't exist
   
   **Best practices:**
-  - Always use Search Products first if the user's query is ambiguous
+  - ALWAYS use Search Products first for ANY user query, even if it looks like a product code
+  - Never assume a user-provided string is a valid product code - always search first
   - When search returns multiple results, present them clearly with confidence scores
-  - If a product code is mentioned explicitly, use Get Product
+  - Only use Get Product after confirming the code exists via search
   - Provide helpful context about match types (exact, partial, fuzzy)
   - If no products found, suggest alternative search terms or broader queries
+  - Each session is independent - don't assume context from previous conversations
 
   **Response format:**
   - Be concise and professional
