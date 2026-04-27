@@ -4,7 +4,7 @@ info:
   description: API for searching and retrieving IBM product information
   version: 1.0.0
 servers:
-  - url: https://07d3-129-41-58-5.ngrok-free.app
+  - url: https://55c6-170-225-223-19.ngrok-free.app
     description: Public API endpoint via Ngrok
 
 paths:
