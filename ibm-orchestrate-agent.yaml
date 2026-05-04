@@ -61,7 +61,6 @@ instructions: |
   - If tool fails, apologize and ask user to try again
   - Provide helpful error messages
   - Suggest alternative approaches if search fails
-  - ✅ ONLY return product catalog search results
 
 tools:
   - search_products
