@@ -4,7 +4,7 @@ info:
   description: API for searching and retrieving IBM product information
   version: 1.0.0
 servers:
-  - url: https://d00c-170-225-223-19.ngrok-free.app
+  - url: https://frowsy-glareless-kylie.ngrok-free.dev
     description: Public API endpoint via Ngrok
 
 paths:
