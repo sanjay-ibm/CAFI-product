@@ -30,6 +30,77 @@ High-performance FastAPI service for product identification using advanced multi
 - **ASCII Encoding**: Removes accents and special characters
 - **Whitespace Collapse**: Normalizes all spacing
 
+## 🧪 Testing
+
+This project includes comprehensive automated testing with CI/CD integration.
+
+### Quick Test Commands
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run with coverage
+pytest tests/ --cov=src --cov-report=html
+
+# Run specific test categories
+pytest tests/ -m unit          # Unit tests only
+pytest tests/ -m integration   # Integration tests only
+pytest tests/ -m smoke         # Smoke tests only
+```
+
+### Using Test Scripts
+
+**Linux/macOS:**
+```bash
+# Setup testing environment
+./tests/automatedTest/scripts/setup_testing.sh
+
+# Run tests
+./tests/automatedTest/scripts/run_tests.sh
+
+# Run with HTML coverage report
+./tests/automatedTest/scripts/run_tests.sh --html
+
+# Watch mode (rerun on changes)
+./tests/automatedTest/scripts/run_tests.sh --watch
+```
+
+**Windows (PowerShell):**
+```powershell
+# Run tests
+.\tests\automatedTest\scripts\run_tests.ps1
+
+# Run with HTML coverage report
+.\tests\automatedTest\scripts\run_tests.ps1 -Html
+
+# Watch mode
+.\tests\automatedTest\scripts\run_tests.ps1 -Watch
+```
+
+### Pre-commit Hooks
+
+Automated code quality checks before each commit:
+
+```bash
+# Install pre-commit hooks
+pip install pre-commit
+cd tests/automatedTest
+pre-commit install
+
+# Run manually
+pre-commit run --all-files
+```
+
+### CI/CD
+
+Tests automatically run on:
+- Push to `main` or `develop` branches
+- Pull requests
+- Daily schedule (2 AM UTC)
+
+See [tests/automatedTest/AUTOMATED_TESTING.md](tests/automatedTest/AUTOMATED_TESTING.md) for complete testing documentation.
+
 ## 📦 Installation
 
 ### Quick Start
